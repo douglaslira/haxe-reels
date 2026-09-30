@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>haxe-reels — OpenFL reel engine</title>
+  <meta name="description" content="Standalone reel engine for OpenFL / Haxe. Spin lifecycle, pooling, cascade, MultiWays, Hold &amp; Win. Outcome via setResult — no win math." />
+  <meta property="og:title" content="haxe-reels" />
+  <meta property="og:description" content="Standalone reel engine for OpenFL / Haxe." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://douglaslira.github.io/haxe-reels/" />
+  <link rel="canonical" href="https://douglaslira.github.io/haxe-reels/" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --felt: #07140f;
+      --felt-mid: #0d2218;
+      --brass: #d4a84b;
+      --brass-dim: #9a7530;
+      --steel: #a8b0c0;
+      --paper: #dfe4da;
+      --ink: #102018;
+      --led: #4fe0b0;
+      --danger: #e35d4a;
+      --max: 1120px;
+      --font-display: "Chakra Petch", system-ui, sans-serif;
+      --font-body: "Source Sans 3", system-ui, sans-serif;
+      --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--paper);
+      background: var(--felt);
+      font-family: var(--font-body);
+      font-size: 1.125rem;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--led); text-underline-offset: 0.18em; }
+    a:hover { color: #9ff5d4; }
+    a:focus-visible {
+      outline: 2px solid var(--brass);
+      outline-offset: 3px;
+    }
+    code, .mono { font-family: var(--font-mono); font-size: 0.92em; }
+
+    /* ——— Hero ——— */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: grid;
+      align-items: end;
+      overflow: hidden;
+      isolation: isolate;
+      background:
+        radial-gradient(ellipse 80% 60% at 70% 30%, rgba(79, 224, 176, 0.08), transparent 55%),
+        radial-gradient(ellipse 50% 40% at 15% 80%, rgba(212, 168, 75, 0.1), transparent 50%),
+        linear-gradient(165deg, #0a1c14 0%, var(--felt) 45%, #050c09 100%);
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black, transparent);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .machine {
+      position: absolute;
+      inset: 8% 0 auto;
+      height: min(52vh, 420px);
+      display: flex;
+      justify-content: center;
+      gap: clamp(6px, 1.2vw, 14px);
+      padding: 0 4vw;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .reel {
+      flex: 0 1 88px;
+      max-width: 100px;
+      height: 100%;
+      border-radius: 6px;
+      background: linear-gradient(90deg, #050806, #121f18 12%, #1a2c22 50%, #121f18 88%, #050806);
+      box-shadow:
+        inset 0 0 0 1px rgba(212, 168, 75, 0.35),
+        inset 0 0 24px rgba(0,0,0,0.65),
+        0 18px 40px rgba(0,0,0,0.45);
+      overflow: hidden;
+      position: relative;
+    }
+    .reel::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.55) 0%,
+        transparent 28%,
+        transparent 72%,
+        rgba(0,0,0,0.55) 100%
+      );
+      pointer-events: none;
+      z-index: 2;
+    }
+    .reel-window {
+      position: absolute;
+      left: 6%;
+      right: 6%;
+      top: 50%;
+      height: 22%;
+      transform: translateY(-50%);
+      border: 1px solid rgba(212, 168, 75, 0.55);
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.4), inset 0 0 12px rgba(79, 224, 176, 0.12);
+      z-index: 3;
+      pointer-events: none;
+    }
+    .strip {
+      display: flex;
+      flex-direction: column;
+      animation: spin linear infinite;
+      will-change: transform;
+    }
+    .reel:nth-child(1) .strip { animation-duration: 4.2s; animation-delay: -0.4s; }
+    .reel:nth-child(2) .strip { animation-duration: 3.6s; animation-delay: -1.1s; }
+    .reel:nth-child(3) .strip { animation-duration: 5.1s; animation-delay: -0.2s; }
+    .reel:nth-child(4) .strip { animation-duration: 3.9s; animation-delay: -2.0s; }
+    .reel:nth-child(5) .strip { animation-duration: 4.7s; animation-delay: -1.5s; }
+
+    .cell {
+      flex: 0 0 auto;
+      height: calc(min(52vh, 420px) * 0.22);
+      display: grid;
+      place-items: center;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(0.85rem, 2.2vw, 1.15rem);
+      letter-spacing: 0.06em;
+      color: var(--paper);
+      text-shadow: 0 1px 0 rgba(0,0,0,0.6);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .cell.cherry { color: #ff7a6e; }
+    .cell.seven { color: var(--brass); }
+    .cell.bar { color: var(--steel); }
+    .cell.wild { color: var(--led); }
+
+    @keyframes spin {
+      from { transform: translateY(0); }
+      to { transform: translateY(-50%); }
+    }
+
+    .hero-copy {
+      position: relative;
+      z-index: 4;
+      width: min(100%, var(--max));
+      margin: 0 auto;
+      padding: 0 clamp(1.25rem, 4vw, 2rem) clamp(2.5rem, 6vh, 4rem);
+      animation: rise 0.9s ease-out both;
+    }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .brand {
+      margin: 0;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(3rem, 11vw, 6.5rem);
+      line-height: 0.92;
+      letter-spacing: -0.02em;
+      color: var(--paper);
+      text-shadow: 0 2px 0 rgba(0,0,0,0.35);
+    }
+    .brand span {
+      color: var(--brass);
+    }
+    .tagline {
+      margin: 1rem 0 0;
+      max-width: 34rem;
+      font-size: clamp(1.05rem, 2.4vw, 1.3rem);
+      color: var(--steel);
+    }
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1rem;
+      margin-top: 1.75rem;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 2.85rem;
+      padding: 0 1.25rem;
+      border-radius: 2px;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 1rem;
+      letter-spacing: 0.04em;
+      text-decoration: none;
+      border: 1px solid transparent;
+      transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary {
+      background: var(--brass);
+      color: #1a1204;
+    }
+    .btn-primary:hover { background: #e0b85a; color: #1a1204; }
+    .btn-ghost {
+      background: transparent;
+      color: var(--paper);
+      border-color: rgba(168, 176, 192, 0.45);
+    }
+    .btn-ghost:hover {
+      border-color: var(--led);
+      color: var(--led);
+    }
+
+    /* ——— Sections ——— */
+    .wrap {
+      width: min(100%, var(--max));
+      margin: 0 auto;
+      padding: 0 clamp(1.25rem, 4vw, 2rem);
+    }
+    section {
+      padding: clamp(3.5rem, 9vh, 6rem) 0;
+    }
+    section + section {
+      border-top: 1px solid rgba(168, 176, 192, 0.12);
+    }
+    h2 {
+      margin: 0 0 0.75rem;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: clamp(1.75rem, 4vw, 2.35rem);
+      letter-spacing: -0.01em;
+      color: var(--paper);
+    }
+    .lede {
+      margin: 0 0 1.75rem;
+      max-width: 40rem;
+      color: var(--steel);
+    }
+
+    .split {
+      display: grid;
+      gap: 2rem;
+    }
+    @media (min-width: 860px) {
+      .split {
+        grid-template-columns: 1fr 1.15fr;
+        gap: 3rem;
+        align-items: start;
+      }
+    }
+
+    .feature-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 1rem;
+    }
+    .feature-list li {
+      padding-left: 1.1rem;
+      border-left: 3px solid var(--brass-dim);
+    }
+    .feature-list strong {
+      display: block;
+      font-family: var(--font-display);
+      font-weight: 600;
+      color: var(--paper);
+      margin-bottom: 0.15rem;
+    }
+    .feature-list span {
+      color: var(--steel);
+      font-size: 1rem;
+    }
+
+    .panel {
+      background: var(--felt-mid);
+      border: 1px solid rgba(212, 168, 75, 0.22);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .panel-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.55rem 0.9rem;
+      background: rgba(0,0,0,0.35);
+      border-bottom: 1px solid rgba(168, 176, 192, 0.12);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--steel);
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--brass-dim);
+    }
+    .dot.on { background: var(--led); box-shadow: 0 0 8px rgba(79, 224, 176, 0.6); }
+    pre {
+      margin: 0;
+      padding: 1.1rem 1.15rem 1.35rem;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      line-height: 1.55;
+      color: #c8d0c4;
+    }
+    .kw { color: var(--brass); }
+    .fn { color: var(--led); }
+    .str { color: #f0a090; }
+    .cm { color: #6a7a70; }
+
+    .flow {
+      display: grid;
+      gap: 0.75rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      counter-reset: step;
+    }
+    .flow li {
+      counter-increment: step;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.85rem;
+      align-items: start;
+      padding: 0.85rem 0;
+      border-bottom: 1px solid rgba(168, 176, 192, 0.1);
+    }
+    .flow li::before {
+      content: counter(step, decimal-leading-zero);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--brass);
+      padding-top: 0.2rem;
+    }
+    .flow strong {
+      display: block;
+      font-family: var(--font-display);
+      font-weight: 600;
+    }
+    .flow span { color: var(--steel); font-size: 1rem; }
+
+    .samples {
+      display: grid;
+      gap: 1.25rem;
+    }
+    @media (min-width: 720px) {
+      .samples { grid-template-columns: 1fr 1fr; }
+    }
+    .sample {
+      padding: 1.35rem 1.4rem 1.5rem;
+      background: linear-gradient(160deg, rgba(13, 34, 24, 0.9), rgba(7, 20, 15, 0.95));
+      border-top: 3px solid var(--brass);
+    }
+    .sample h3 {
+      margin: 0 0 0.4rem;
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      font-weight: 600;
+    }
+    .sample p {
+      margin: 0 0 1rem;
+      color: var(--steel);
+      font-size: 1rem;
+    }
+    .sample code {
+      display: block;
+      margin-bottom: 0.85rem;
+      color: var(--paper);
+      font-size: 0.82rem;
+    }
+
+    .scope {
+      display: grid;
+      gap: 1.5rem;
+    }
+    @media (min-width: 720px) {
+      .scope { grid-template-columns: 1fr 1fr; }
+    }
+    .scope-block h3 {
+      margin: 0 0 0.65rem;
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      color: var(--brass);
+    }
+    .scope-block ul {
+      margin: 0;
+      padding-left: 1.1rem;
+      color: var(--steel);
+      font-size: 1rem;
+    }
+    .scope-block.out h3 { color: var(--danger); }
+
+    footer {
+      padding: 2.5rem 0 3rem;
+      border-top: 1px solid rgba(168, 176, 192, 0.12);
+      color: var(--steel);
+      font-size: 0.95rem;
+    }
+    footer .wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.5rem;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    footer strong {
+      font-family: var(--font-display);
+      color: var(--paper);
+      font-weight: 600;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .strip { animation: none !important; }
+      .hero-copy { animation: none !important; }
+      .btn { transition: none; }
+    }
+
+    @media (max-width: 640px) {
+      .machine { height: 34vh; inset: 6% 0 auto; }
+      .hero { align-items: end; }
+      .hero-copy { padding-top: 38vh; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="machine" aria-hidden="true">
+      <div class="reel"><div class="reel-window"></div><div class="strip" id="s0"></div></div>
+      <div class="reel"><div class="reel-window"></div><div class="strip" id="s1"></div></div>
+      <div class="reel"><div class="reel-window"></div><div class="strip" id="s2"></div></div>
+      <div class="reel"><div class="reel-window"></div><div class="strip" id="s3"></div></div>
+      <div class="reel"><div class="reel-window"></div><div class="strip" id="s4"></div></div>
+    </div>
+    <div class="hero-copy">
+      <h1 class="brand">haxe<span>-reels</span></h1>
+      <p class="tagline">Standalone reel engine for OpenFL / Haxe. Spin, land, cascade — outcome arrives through <code>setResult</code>.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://github.com/douglaslira/haxe-reels">View on GitHub</a>
+        <a class="btn btn-ghost" href="#install">Install</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="about">
+      <div class="wrap split">
+        <div>
+          <h2>Motion layer, not game math</h2>
+          <p class="lede">haxe-reels owns strips, timing, pooling, pins, tumble, MultiWays reshape, and win <em>presentation</em>. Your RGS owns wins, wallet, and RNG.</p>
+          <ol class="flow">
+            <li>
+              <div>
+                <strong>Build a ReelSet</strong>
+                <span>Geometry, symbols, speed profiles, optional cascade or curve.</span>
+              </div>
+            </li>
+            <li>
+              <div>
+                <strong>Call spin()</strong>
+                <span>Strips accelerate. Decorative weights fill the blur — not the payout.</span>
+              </div>
+            </li>
+            <li>
+              <div>
+                <strong>setResult(grid)</strong>
+                <span>Authoritative column targets from your server trigger the stop sequence.</span>
+              </div>
+            </li>
+          </ol>
+        </div>
+        <ul class="feature-list">
+          <li>
+            <strong>Spin FSM</strong>
+            <span>Start → spin → anticipation → stop, with skip/slam and per-reel delays.</span>
+          </li>
+          <li>
+            <strong>Cascade / tumble</strong>
+            <span>Fall → place → drop-in, plus refill modes <code>combined</code> and <code>gravity-then-drop</code>.</span>
+          </li>
+          <li>
+            <strong>MultiWays &amp; pins</strong>
+            <span>Reshape cell counts in a fixed reel box; sticky and walking pin overlays.</span>
+          </li>
+          <li>
+            <strong>Hold &amp; Win board</strong>
+            <span>Independent 1×1 strips in a W×H grid via <code>HoldAndWinBuilder</code>.</span>
+          </li>
+          <li>
+            <strong>Headless tests</strong>
+            <span><code>FakeClock</code> + utest — no Stage required for CI.</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="install">
+      <div class="wrap split">
+        <div>
+          <h2>Install</h2>
+          <p class="lede">Haxe 4.x, OpenFL, and Lime. Drop the haxelib into any Lime <code>project.xml</code>.</p>
+          <div class="cta-row">
+            <a class="btn btn-ghost" href="https://github.com/douglaslira/haxe-reels#quick-start">Full API in README</a>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-bar"><span class="dot on"></span><span class="dot"></span><span>shell</span></div>
+          <pre><span class="cm"># GitHub</span>
+haxelib git haxe-reels https://github.com/douglaslira/haxe-reels
+
+<span class="cm"># or local checkout</span>
+haxelib dev haxe-reels /path/to/haxe-reels
+
+<span class="cm"># project.xml</span>
+&lt;haxelib name=<span class="str">"haxe-reels"</span> /&gt;</pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="code">
+      <div class="wrap">
+        <h2>Minimal spin</h2>
+        <p class="lede">Bitmap symbols, live Stage clock, land from a server grid.</p>
+        <div class="panel">
+          <div class="panel-bar"><span class="dot on"></span><span class="dot"></span><span>Main.hx</span></div>
+          <pre><span class="kw">var</span> reelSet = <span class="kw">new</span> <span class="fn">ReelSetBuilder</span>()
+  .<span class="fn">reels</span>(5).<span class="fn">visibleCells</span>(3).<span class="fn">symbolSize</span>(140, 140)
+  .<span class="fn">liveClock</span>()
+  .<span class="fn">symbols</span>(<span class="kw">function</span>(r) {
+    r.<span class="fn">registerClass</span>(<span class="str">"cherry"</span>, BitmapReelSymbol, {bitmapData: cherry});
+    r.<span class="fn">registerClass</span>(<span class="str">"seven"</span>, BitmapReelSymbol, {bitmapData: seven});
+  })
+  .<span class="fn">weights</span>([<span class="str">"cherry"</span> =&gt; 40, <span class="str">"seven"</span> =&gt; 10])
+  .<span class="fn">speed</span>(<span class="str">"normal"</span>, SpeedPresets.NORMAL)
+  .<span class="fn">build</span>();
+
+stage.<span class="fn">addChild</span>(reelSet.view);
+reelSet.<span class="fn">spin</span>(onComplete);
+reelSet.<span class="fn">setResult</span>(serverGrid); <span class="cm">// ColumnTarget[]</span></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="samples">
+      <div class="wrap">
+        <h2>Samples in the repo</h2>
+        <p class="lede">Two OpenFL HTML5 apps ship with the library.</p>
+        <div class="samples">
+          <article class="sample">
+            <h3>Lab — sample/</h3>
+            <p>Interactive panel for geometry, cascade, pins, Hold &amp; Win, curve, and speeds. Bridge: <code>window.HaxeReelsDemo</code>.</p>
+            <code>cd sample && openfl test html5</code>
+            <a href="https://github.com/douglaslira/haxe-reels/tree/main/sample">Browse sample →</a>
+          </article>
+          <article class="sample">
+            <h3>Orchard Reels</h3>
+            <p>Standalone consumer game: HUD, mock outcome, <code>WinPresenter</code>. No casino or RGS coupling.</p>
+            <code>cd games/orchard-reels && openfl test html5</code>
+            <a href="https://github.com/douglaslira/haxe-reels/tree/main/games/orchard-reels">Browse Orchard Reels →</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="scope">
+      <div class="wrap">
+        <h2>Scope</h2>
+        <p class="lede">Clear boundary between engine and game services.</p>
+        <div class="scope">
+          <div class="scope-block">
+            <h3>In the engine</h3>
+            <ul>
+              <li>Builder, phases, StopFrameQueue land, pooling</li>
+              <li>Bitmap / headless / big symbols, Spine adapter hooks</li>
+              <li>Skip, slam, anticipation, stop stagger</li>
+              <li>Cascade, MultiWays, pins, WinPresenter</li>
+              <li>Hold &amp; Win board, FakeClock harness</li>
+            </ul>
+          </div>
+          <div class="scope-block out">
+            <h3>Your game / RGS</h3>
+            <ul>
+              <li>Paytable, ways/lines, certified RNG</li>
+              <li>Wallet debit before spin</li>
+              <li>Audio, full HUD frameworks, bonus FS machines</li>
+              <li>Spine runtime binding (bring your own)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p><strong>haxe-reels</strong> · MIT © Douglas Lira · Inspired by <a href="https://github.com/schmooky/pixi-reels">pixi-reels</a></p>
+      <p><a href="https://github.com/douglaslira/haxe-reels">github.com/douglaslira/haxe-reels</a></p>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var ids = ["CHERRY", "SEVEN", "BAR", "WILD", "LEMON", "BELL"];
+      var cls = { CHERRY: "cherry", SEVEN: "seven", BAR: "bar", WILD: "wild" };
+      function fill(el) {
+        var html = "";
+        for (var pass = 0; pass < 2; pass++) {
+          for (var i = 0; i < ids.length; i++) {
+            var id = ids[(i + pass * 2) % ids.length];
+            html += '<div class="cell ' + (cls[id] || "") + '">' + id + "</div>";
+          }
+        }
+        el.innerHTML = html;
+      }
+      for (var r = 0; r < 5; r++) fill(document.getElementById("s" + r));
+    })();
+  </script>
+</body>
+</html>

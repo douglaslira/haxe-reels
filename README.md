@@ -14,6 +14,8 @@ Handles strip motion, land timing, pooling, pins, cascade/tumble, MultiWays resh
 
 Repository: [github.com/douglaslira/haxe-reels](https://github.com/douglaslira/haxe-reels)
 
+Site: [douglaslira.github.io/haxe-reels](https://douglaslira.github.io/haxe-reels/)
+
 ---
 
 ## What this library is
