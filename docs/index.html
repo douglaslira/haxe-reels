@@ -653,8 +653,18 @@
     }
 
     /* Cascade */
+    .viz-cascade .frame-inner {
+      overflow: hidden;
+    }
+    .viz-cascade .mini-board {
+      overflow: hidden;
+    }
+    .viz-cascade .mini-reel {
+      overflow: hidden;
+      border-radius: 4px;
+    }
     .viz-cascade .mini-cell.fall {
-      animation: tumbleFall 2s ease-in-out infinite;
+      animation: tumbleFall 1.6s ease-in infinite;
     }
     .viz-cascade .mini-reel:nth-child(2) .mini-cell.fall { animation-delay: 0.2s; }
     .viz-cascade .mini-reel:nth-child(4) .mini-cell.fall { animation-delay: 0.35s; }
@@ -664,22 +674,11 @@
       background: transparent;
       box-shadow: none;
     }
-    .viz-cascade .trail {
-      position: absolute;
-      width: 3px;
-      height: 28px;
-      background: linear-gradient(to bottom, transparent, var(--led));
-      opacity: 0.55;
-      animation: trailDrop 2s ease-in-out infinite;
-    }
     @keyframes tumbleFall {
-      0%, 100% { transform: translateY(0); filter: brightness(1); }
-      35% { transform: translateY(22px); filter: brightness(0.7); }
-      55% { transform: translateY(-6px); filter: brightness(1.15); }
-    }
-    @keyframes trailDrop {
-      0%, 100% { opacity: 0; transform: translateY(-10px); }
-      40% { opacity: 0.6; transform: translateY(12px); }
+      0% { transform: translateY(-110%); opacity: 0; }
+      18% { opacity: 1; }
+      55% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(0); opacity: 1; }
     }
 
     /* MultiWays */
@@ -867,39 +866,42 @@
       50% { filter: brightness(1.3) saturate(1.3); transform: scale(1.05); }
     }
 
-    /* Anticipation */
+    /* Anticipation — continuous spin tease, no yoyo */
     .viz-antic .mini-reel:last-child {
       position: relative;
-      border-radius: 6px;
-      box-shadow: 0 0 0 2px var(--brass), 0 0 24px rgba(226, 180, 74, 0.5);
-      animation: anticGlow 1.15s ease-in-out infinite;
       overflow: hidden;
+      height: calc(34px * 3 + 4px * 2);
+      border-radius: 6px;
+      box-shadow: 0 0 0 2px var(--brass), 0 0 22px rgba(226, 180, 74, 0.45);
+      animation: anticGlow 1.4s ease-in-out infinite;
     }
-    .viz-antic .mini-reel:last-child .mini-cell {
-      animation: anticSpin 0.45s linear infinite;
+    .viz-antic .antic-strip {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      animation: anticScroll 0.85s linear infinite;
+      will-change: transform;
     }
     .viz-antic .spark {
       position: absolute;
-      right: -6px;
+      right: -5px;
       top: 50%;
-      width: 10px;
-      height: 10px;
+      width: 8px;
+      height: 8px;
+      margin-top: -4px;
       border-radius: 50%;
       background: var(--brass);
-      box-shadow: 0 0 12px var(--brass);
-      animation: sparkBlink 1.15s ease-in-out infinite;
+      box-shadow: 0 0 10px var(--brass);
+      opacity: 0.85;
+      pointer-events: none;
     }
     @keyframes anticGlow {
       0%, 100% { box-shadow: 0 0 0 2px var(--brass), 0 0 14px rgba(226, 180, 74, 0.35); }
-      50% { box-shadow: 0 0 0 2px #ffe08a, 0 0 32px rgba(226, 180, 74, 0.7); }
+      50% { box-shadow: 0 0 0 2px #ffe08a, 0 0 28px rgba(226, 180, 74, 0.65); }
     }
-    @keyframes anticSpin {
+    @keyframes anticScroll {
       from { transform: translateY(0); }
-      to { transform: translateY(-6px); }
-    }
-    @keyframes sparkBlink {
-      0%, 100% { opacity: 0.4; transform: scale(0.8); }
-      50% { opacity: 1; transform: scale(1.15); }
+      to { transform: translateY(calc(-50% - 2px)); }
     }
 
     /* Alternate directions accent on classic */
@@ -955,8 +957,7 @@
       .strip, .stage-grid, .payline, .hero-copy, .viz:hover,
       .viz-cascade .mini-cell.fall, .hw-cell.coin, .viz-pin .pin-mark,
       .viz-win .mini-cell.hit, .viz-antic .mini-reel:last-child,
-      .viz-antic .mini-reel:last-child .mini-cell, .viz-big .big,
-      .viz-antic .spark { animation: none !important; }
+      .viz-antic .antic-strip, .viz-big .big { animation: none !important; }
       .viz { transition: none; }
       .btn { transition: none; }
     }
@@ -1296,7 +1297,15 @@ reelSet.<span class="fn">setResult</span>(serverGrid); <span class="cm">// Colum
                   <div class="mini-reel"><div class="mini-cell w">W</div><div class="mini-cell c">C</div><div class="mini-cell s">7</div></div>
                   <div class="mini-reel"><div class="mini-cell s">7</div><div class="mini-cell w">W</div><div class="mini-cell c">C</div></div>
                   <div class="mini-reel"><div class="mini-cell b">B</div><div class="mini-cell s">7</div><div class="mini-cell w">W</div></div>
-                  <div class="mini-reel"><div class="mini-cell c">C</div><div class="mini-cell s">7</div><div class="mini-cell w">W</div><div class="spark"></div></div>
+                  <div class="mini-reel">
+                    <div class="spark"></div>
+                    <div class="antic-strip">
+                      <div class="mini-cell c">C</div><div class="mini-cell s">7</div><div class="mini-cell w">W</div>
+                      <div class="mini-cell b">B</div><div class="mini-cell l">L</div><div class="mini-cell c">C</div>
+                      <div class="mini-cell c">C</div><div class="mini-cell s">7</div><div class="mini-cell w">W</div>
+                      <div class="mini-cell b">B</div><div class="mini-cell l">L</div><div class="mini-cell c">C</div>
+                    </div>
+                  </div>
                 </div>
               </div></div>
             </div>
