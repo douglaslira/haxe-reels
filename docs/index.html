@@ -52,17 +52,15 @@
 
     /* ——— Top bar ——— */
     .topbar {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
+      position: relative;
       z-index: 10;
       display: flex;
       align-items: center;
       justify-content: space-between;
       width: min(100%, var(--max));
       margin: 0 auto;
-      padding: 1.15rem clamp(1.25rem, 4vw, 2rem);
+      padding: 1.15rem clamp(1.25rem, 4vw, 2rem) 0.35rem;
+      flex: 0 0 auto;
     }
     .topbar-mark {
       font-family: var(--font-display);
@@ -88,35 +86,26 @@
       position: relative;
       min-height: 100vh;
       min-height: 100dvh;
-      display: grid;
-      grid-template-rows: 1fr auto;
+      display: flex;
+      flex-direction: column;
       overflow: hidden;
       isolation: isolate;
-      background: #030805;
+      background:
+        radial-gradient(ellipse 90% 55% at 50% 70%, #163828 0%, transparent 58%),
+        radial-gradient(ellipse 45% 35% at 85% 20%, rgba(226, 180, 74, 0.1), transparent 50%),
+        linear-gradient(180deg, #0a1610 0%, #030805 55%, #020604 100%);
     }
-
-    /* Full-bleed stage behind everything */
-    .stage {
+    .hero::before {
+      content: "";
       position: absolute;
       inset: 0;
       z-index: 0;
-      overflow: hidden;
-      background:
-        radial-gradient(ellipse 90% 70% at 50% 35%, #143326 0%, transparent 62%),
-        radial-gradient(ellipse 50% 40% at 80% 70%, rgba(226, 180, 74, 0.12), transparent 55%),
-        linear-gradient(180deg, #07140f 0%, #030805 100%);
-    }
-    .stage-grid {
-      position: absolute;
-      inset: -10%;
       background-image:
-        linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
       background-size: 56px 56px;
-      transform: perspective(600px) rotateX(48deg) scale(1.35);
-      transform-origin: center 20%;
-      opacity: 0.55;
-      mask-image: linear-gradient(to bottom, black 20%, transparent 85%);
+      mask-image: radial-gradient(ellipse 80% 70% at 50% 60%, black, transparent);
+      pointer-events: none;
       animation: gridDrift 18s linear infinite;
     }
     @keyframes gridDrift {
@@ -124,24 +113,29 @@
       to { background-position: 56px 56px, 56px 56px; }
     }
 
-    .cabinet {
-      position: absolute;
-      left: 50%;
-      top: 42%;
-      transform: translate(-50%, -50%);
-      width: min(920px, 94vw);
-      height: min(46vh, 380px);
+    .stage {
+      position: relative;
       z-index: 1;
+      flex: 1 1 auto;
+      display: grid;
+      place-items: center;
+      width: 100%;
+      min-height: 0;
+      padding: 0.5rem 1rem 1.5rem;
+    }
+
+    .cabinet {
+      width: min(920px, 94vw);
+      height: min(42vh, 360px);
       padding: 14px 16px 18px;
       border-radius: 18px;
       background:
-        linear-gradient(145deg, #2a2418 0%, #12100c 40%, #1c1810 100%);
+        linear-gradient(145deg, #3a3224 0%, #16130e 42%, #241e14 100%);
       box-shadow:
-        0 0 0 1px rgba(226, 180, 74, 0.35),
-        0 0 0 6px rgba(0, 0, 0, 0.55),
-        0 40px 80px rgba(0, 0, 0, 0.65),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
-      opacity: 0.92;
+        0 0 0 1px rgba(226, 180, 74, 0.45),
+        0 0 0 7px rgba(0, 0, 0, 0.5),
+        0 28px 60px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
     }
     .cabinet-bezel {
       height: 100%;
@@ -212,7 +206,7 @@
 
     .cell {
       flex: 0 0 auto;
-      height: calc(min(46vh, 380px) * 0.28);
+      height: calc(min(42vh, 360px) * 0.28);
       margin: 4px 6px;
       display: grid;
       place-items: center;
@@ -251,22 +245,13 @@
       to { transform: translateY(-50%); }
     }
 
-    .hero-scrim {
-      position: absolute;
-      inset: 0;
-      z-index: 2;
-      background:
-        linear-gradient(180deg, rgba(3, 8, 5, 0.55) 0%, transparent 28%),
-        linear-gradient(180deg, transparent 35%, rgba(3, 8, 5, 0.55) 62%, rgba(3, 8, 5, 0.96) 88%);
-      pointer-events: none;
-    }
-
     .hero-copy {
       position: relative;
       z-index: 4;
+      flex: 0 0 auto;
       width: min(100%, var(--max));
       margin: 0 auto;
-      padding: 5.5rem clamp(1.25rem, 4vw, 2rem) clamp(2.75rem, 7vh, 4.5rem);
+      padding: 0.5rem clamp(1.25rem, 4vw, 2rem) clamp(2.5rem, 6vh, 3.75rem);
       animation: rise 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
     @keyframes rise {
@@ -563,33 +548,16 @@
 
     @media (max-width: 700px) {
       .cabinet {
-        top: 36%;
-        height: min(34vh, 260px);
+        height: min(32vh, 240px);
         padding: 10px;
         border-radius: 12px;
       }
-      .hero-copy { padding-top: 4.5rem; }
-      .brand { font-size: clamp(3rem, 14vw, 4.5rem); }
+      .brand { font-size: clamp(2.8rem, 13vw, 4.2rem); }
     }
   </style>
 </head>
 <body>
   <header class="hero">
-    <div class="stage" aria-hidden="true">
-      <div class="stage-grid"></div>
-      <div class="cabinet">
-        <div class="cabinet-bezel">
-          <div class="payline"></div>
-          <div class="reel"><div class="strip" id="s0"></div></div>
-          <div class="reel"><div class="strip" id="s1"></div></div>
-          <div class="reel"><div class="strip" id="s2"></div></div>
-          <div class="reel"><div class="strip" id="s3"></div></div>
-          <div class="reel"><div class="strip" id="s4"></div></div>
-        </div>
-      </div>
-    </div>
-    <div class="hero-scrim" aria-hidden="true"></div>
-
     <nav class="topbar">
       <a class="topbar-mark" href="#">haxe<span>-reels</span></a>
       <a class="ghost" href="https://github.com/douglaslira/haxe-reels">GitHub</a>
@@ -601,6 +569,19 @@
       <div class="cta-row">
         <a class="btn btn-primary" href="https://github.com/douglaslira/haxe-reels">View on GitHub</a>
         <a class="btn btn-ghost" href="#install">Install</a>
+      </div>
+    </div>
+
+    <div class="stage" aria-hidden="true">
+      <div class="cabinet">
+        <div class="cabinet-bezel">
+          <div class="payline"></div>
+          <div class="reel"><div class="strip" id="s0"></div></div>
+          <div class="reel"><div class="strip" id="s1"></div></div>
+          <div class="reel"><div class="strip" id="s2"></div></div>
+          <div class="reel"><div class="strip" id="s3"></div></div>
+          <div class="reel"><div class="strip" id="s4"></div></div>
+        </div>
       </div>
     </div>
   </header>
