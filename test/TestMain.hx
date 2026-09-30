@@ -1,0 +1,72 @@
+package;
+
+import utest.Runner;
+import utest.ui.Report;
+import tests.TestObjectPool;
+import tests.TestEventEmitter;
+import tests.TestReelAxis;
+import tests.TestReelMotion;
+import tests.TestColumnTarget;
+import tests.TestSpinAndLand;
+import tests.TestStopFrameQueue;
+import tests.TestTumbleAlgorithm;
+import tests.TestCascadeSpin;
+import tests.TestRefillCombined;
+import tests.TestDestroyAndCascade;
+import tests.TestGravityThenDrop;
+import tests.TestDirectionPerReel;
+import tests.TestReelCurve;
+import tests.TestReelWarp;
+import tests.TestMultiWays;
+import tests.TestPins;
+import tests.TestSpotlight;
+import tests.TestWinPresenter;
+import tests.TestSpineReelSymbol;
+import tests.TestSpineOnCurve;
+import tests.TestHoldReels;
+import tests.TestHoldAndWinState;
+import tests.TestBoardGrid;
+import tests.TestHoldAndWinBoard;
+import tests.TestMaskStrategy;
+import tests.TestNudge;
+import tests.TestBigSymbols;
+import tests.TestPinSpineOnCurve;
+import tests.TestOrientationMotion;
+
+class TestMain {
+	static function main() {
+		var runner = new Runner();
+		runner.addCase(new TestObjectPool());
+		runner.addCase(new TestEventEmitter());
+		runner.addCase(new TestReelAxis());
+		runner.addCase(new TestReelMotion());
+		runner.addCase(new TestOrientationMotion());
+		runner.addCase(new TestColumnTarget());
+		runner.addCase(new TestSpinAndLand());
+		runner.addCase(new TestStopFrameQueue());
+		runner.addCase(new TestTumbleAlgorithm());
+		runner.addCase(new TestCascadeSpin());
+		runner.addCase(new TestRefillCombined());
+		runner.addCase(new TestDestroyAndCascade());
+		runner.addCase(new TestGravityThenDrop());
+		runner.addCase(new TestDirectionPerReel());
+		runner.addCase(new TestReelCurve());
+		runner.addCase(new TestReelWarp());
+		runner.addCase(new TestMultiWays());
+		runner.addCase(new TestPins());
+		runner.addCase(new TestSpotlight());
+		runner.addCase(new TestWinPresenter());
+		runner.addCase(new TestSpineReelSymbol());
+		runner.addCase(new TestSpineOnCurve());
+		runner.addCase(new TestHoldReels());
+		runner.addCase(new TestHoldAndWinState());
+		runner.addCase(new TestBoardGrid());
+		runner.addCase(new TestHoldAndWinBoard());
+		runner.addCase(new TestMaskStrategy());
+		runner.addCase(new TestNudge());
+		runner.addCase(new TestBigSymbols());
+		runner.addCase(new TestPinSpineOnCurve());
+		Report.create(runner);
+		runner.run();
+	}
+}

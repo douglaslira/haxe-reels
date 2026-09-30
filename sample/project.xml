@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project xmlns="http://lime.openfl.org/project/1.0.4"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://lime.openfl.org/project/1.0.4 http://lime.openfl.org/xsd/project-1.0.4.xsd">
+
+	<meta title="haxe-reels sample" package="reels.sample" version="0.2.0" company="Douglas Lira" />
+	<app main="Main" path="Export" file="HaxeReelsSample" />
+
+	<source path="Source" />
+	<source path="../src" />
+
+	<haxelib name="openfl" />
+	<haxelib name="lime" />
+
+	<template path="templates" if="html5" />
+	<assets path="assets" rename="" if="html5" />
+
+	<!-- Stage only (side rails are HTML). Sized to max board 5×4 + padding. -->
+	<window width="688" height="516" background="#0a1812" fps="60" resizable="false" />
+</project>

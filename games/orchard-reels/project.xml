@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project xmlns="http://lime.openfl.org/project/1.0.4"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://lime.openfl.org/project/1.0.4 http://lime.openfl.org/xsd/project-1.0.4.xsd">
+
+	<meta title="Orchard Reels" package="reels.orchard" version="0.1.0" company="Douglas Lira" />
+	<app main="Main" path="Export" file="OrchardReels" />
+
+	<source path="Source" />
+	<source path="../../src" />
+
+	<haxelib name="openfl" />
+	<haxelib name="lime" />
+
+	<template path="templates" if="html5" />
+
+	<window width="960" height="640" background="#0a1812" fps="60" resizable="false" />
+</project>

@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>::APP_TITLE::</title>
+	<meta id="viewport" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<meta name="mobile-web-app-capable" content="yes">
+
+	::if favicons::::foreach (favicons)::
+	<link rel="::__current__.rel::" type="::__current__.type::" href="::__current__.href::">::end::::end::
+
+	<script src="https://cdn.tailwindcss.com"></script>
+	<script>
+		tailwind.config = {
+			theme: {
+				extend: {
+					fontFamily: {
+						sans: ['"Outfit"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+						mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace']
+					},
+					colors: {
+						ink: { 950: '#090b0a', 900: '#101412', 800: '#171c19', 700: '#222a26', 600: '#2e3833' },
+						felt: { deep: '#0a1812', mid: '#0f241a' },
+						gold: { soft: '#e2c48a', mid: '#c9a45c', deep: '#9a7a3a' },
+						flame: { soft: '#ffc878', mid: '#e8943a' }
+					}
+				}
+			}
+		};
+	</script>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+	::if linkedLibraries::::foreach (linkedLibraries)::
+	<script type="text/javascript" src="::__current__::"></script>::end::::end::
+	<script type="text/javascript" src="./::APP_FILE::.js"></script>
+
+	<script>
+		window.addEventListener("touchmove", function (event) { event.preventDefault(); }, { capture: false, passive: false });
+		if (typeof window.devicePixelRatio != 'undefined' && window.devicePixelRatio > 2) {
+			var meta = document.getElementById("viewport");
+			meta.setAttribute('content', 'width=device-width, initial-scale=' + (2 / window.devicePixelRatio) + ', user-scalable=no');
+		}
+	</script>
+
+	<style>
+		html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+		#openfl-content canvas { display: block; max-width: 100%; max-height: 100%; }
+		input[type="range"] {
+			-webkit-appearance: none;
+			appearance: none;
+			height: 4px;
+			border-radius: 999px;
+			background: #2e3833;
+			outline: none;
+		}
+		input[type="range"]::-webkit-slider-thumb {
+			-webkit-appearance: none;
+			width: 14px;
+			height: 14px;
+			border-radius: 50%;
+			background: #e2c48a;
+			border: 2px solid #101412;
+			box-shadow: 0 0 0 1px #c9a45c;
+			cursor: pointer;
+		}
+		input[type="range"]:disabled { opacity: 0.35; }
+
+		.shell {
+			background:
+				radial-gradient(ellipse 70% 50% at 50% 0%, rgba(201,164,92,0.06), transparent 55%),
+				#090b0a;
+		}
+
+		.rail {
+			background: #101412;
+			border-color: rgba(201,164,92,0.12);
+		}
+
+		.stage-shell {
+			background:
+				radial-gradient(ellipse 55% 45% at 50% 48%, rgba(232,165,75,0.09), transparent 60%),
+				radial-gradient(ellipse 90% 80% at 50% 100%, rgba(0,0,0,0.65), transparent 55%),
+				linear-gradient(180deg, #0f241a 0%, #0a1812 100%);
+		}
+
+		.stage-frame {
+			box-shadow:
+				0 0 0 1px rgba(201,164,92,0.22),
+				0 0 0 8px rgba(16,20,18,0.9),
+				0 24px 48px rgba(0,0,0,0.55),
+				inset 0 1px 0 rgba(255,255,255,0.04);
+		}
+
+		.field-label {
+			display: flex;
+			justify-content: space-between;
+			align-items: baseline;
+			font-size: 11px;
+			font-weight: 500;
+			color: #8a958e;
+			margin-bottom: 8px;
+		}
+		.field-value {
+			font-family: "JetBrains Mono", monospace;
+			font-size: 11px;
+			font-weight: 500;
+			color: #e2c48a;
+		}
+
+		.seg {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 2px;
+			padding: 3px;
+			border-radius: 8px;
+			background: #090b0a;
+		}
+		.seg label {
+			cursor: pointer;
+			border-radius: 6px;
+			padding: 8px 6px;
+			text-align: center;
+			font-size: 12px;
+			font-weight: 500;
+			color: #6b756f;
+			transition: color 0.15s, background 0.15s;
+		}
+		.seg label:has(:checked) {
+			background: #222a26;
+			color: #e2c48a;
+			box-shadow: inset 0 0 0 1px rgba(201,164,92,0.35);
+		}
+
+		.check-row {
+			display: flex;
+			gap: 10px;
+			align-items: flex-start;
+			padding: 10px 11px;
+			border-radius: 8px;
+			border: 1px solid rgba(201,164,92,0.1);
+			background: rgba(0,0,0,0.28);
+			cursor: pointer;
+			transition: border-color 0.15s, background 0.15s;
+		}
+		.check-row:has(:checked) {
+			border-color: rgba(201,164,92,0.4);
+			background: rgba(201,164,92,0.08);
+		}
+		.check-row input { margin-top: 2px; accent-color: #c9a45c; }
+
+		.select-field {
+			width: 100%;
+			border-radius: 8px;
+			border: 1px solid rgba(201,164,92,0.14);
+			background: #090b0a;
+			padding: 9px 11px;
+			font-size: 13px;
+			color: #e8ebe9;
+			outline: none;
+		}
+		.select-field:focus { border-color: rgba(201,164,92,0.45); }
+
+		#demo-status {
+			font-family: "JetBrains Mono", monospace;
+			font-size: 11px;
+			line-height: 1.45;
+			padding: 10px 12px;
+			border-radius: 8px;
+			border: 1px solid transparent;
+			min-height: 2.6rem;
+		}
+		#demo-status[data-state="idle"] {
+			border-color: rgba(201,164,92,0.12);
+			background: rgba(0,0,0,0.35);
+			color: #7a857e;
+		}
+		#demo-status[data-state="busy"] {
+			border-color: rgba(232,148,58,0.45);
+			background: rgba(232,148,58,0.1);
+			color: #ffc878;
+		}
+		#demo-status[data-state="done"] {
+			border-color: rgba(110,185,140,0.35);
+			background: rgba(110,185,140,0.08);
+			color: #8fd4a8;
+		}
+
+		#btn-spin {
+			position: relative;
+			width: 100%;
+			padding: 18px 16px;
+			border: none;
+			border-radius: 14px;
+			font-family: inherit;
+			font-size: 15px;
+			font-weight: 700;
+			letter-spacing: 0.12em;
+			color: #1a1408;
+			background: linear-gradient(180deg, #efd49a 0%, #c9a45c 48%, #a88840 100%);
+			box-shadow:
+				0 1px 0 rgba(255,255,255,0.35) inset,
+				0 -2px 0 rgba(0,0,0,0.2) inset,
+				0 8px 20px rgba(0,0,0,0.4),
+				0 0 0 1px rgba(154,122,58,0.6);
+			cursor: pointer;
+			transition: transform 0.12s, filter 0.12s;
+		}
+		#btn-spin:hover:not(:disabled) { filter: brightness(1.05); }
+		#btn-spin:active:not(:disabled) { transform: translateY(1px); }
+		#btn-spin:disabled { opacity: 0.35; cursor: not-allowed; filter: grayscale(0.3); }
+		#btn-spin:focus-visible { outline: 2px solid #e2c48a; outline-offset: 3px; }
+
+		#btn-skip {
+			width: 100%;
+			padding: 12px 16px;
+			border-radius: 10px;
+			border: 1px solid rgba(232,148,58,0.35);
+			background: rgba(232,148,58,0.08);
+			font-family: inherit;
+			font-size: 13px;
+			font-weight: 600;
+			letter-spacing: 0.08em;
+			color: #ffc878;
+			cursor: pointer;
+			transition: background 0.15s, border-color 0.15s;
+		}
+		#btn-skip:hover:not(:disabled) {
+			background: rgba(232,148,58,0.16);
+			border-color: rgba(232,148,58,0.55);
+		}
+		#btn-skip:disabled { opacity: 0.28; cursor: not-allowed; }
+		#btn-skip:not(:disabled) {
+			animation: skip-glow 1.5s ease-in-out infinite;
+		}
+		@keyframes skip-glow {
+			0%, 100% { box-shadow: 0 0 0 0 rgba(232,148,58,0); }
+			50% { box-shadow: 0 0 0 3px rgba(232,148,58,0.22); }
+		}
+		@media (prefers-reduced-motion: reduce) {
+			#btn-skip:not(:disabled) { animation: none; }
+		}
+
+		.ghost-btn {
+			width: 100%;
+			padding: 10px 12px;
+			border-radius: 8px;
+			border: 1px solid rgba(138,149,142,0.25);
+			background: transparent;
+			font-size: 11px;
+			font-weight: 600;
+			letter-spacing: 0.06em;
+			text-transform: uppercase;
+			color: #c5cdc8;
+			cursor: pointer;
+			transition: border-color 0.15s, color 0.15s;
+		}
+		.ghost-btn:hover:not(:disabled) {
+			border-color: rgba(201,164,92,0.45);
+			color: #e2c48a;
+		}
+		.ghost-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+		.ghost-btn.accent {
+			border-color: rgba(232,148,58,0.3);
+			color: #ffc878;
+		}
+
+		.snippet-box {
+			border-radius: 10px;
+			border: 1px solid rgba(201,164,92,0.14);
+			background: #060807;
+			overflow: hidden;
+		}
+		.snippet-box header {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 8px 12px;
+			border-bottom: 1px solid rgba(201,164,92,0.1);
+			background: rgba(255,255,255,0.02);
+		}
+		#demo-snippet {
+			margin: 0;
+			padding: 12px;
+			max-height: 11rem;
+			overflow: auto;
+			font-family: "JetBrains Mono", monospace;
+			font-size: 10px;
+			line-height: 1.55;
+			color: #8a958e;
+			white-space: pre;
+		}
+
+		.kbd {
+			display: inline-block;
+			padding: 1px 5px;
+			border-radius: 4px;
+			border: 1px solid rgba(138,149,142,0.3);
+			background: rgba(0,0,0,0.35);
+			font-family: "JetBrains Mono", monospace;
+			font-size: 9px;
+			color: #6b756f;
+		}
+
+		.rail-scroll::-webkit-scrollbar { width: 6px; }
+		.rail-scroll::-webkit-scrollbar-thumb {
+			background: #2e3833;
+			border-radius: 999px;
+		}
+::foreach assets::::if (type == "font")::::if (cssFontFace)::::cssFontFace::::end::::end::::end::
+	</style>
+</head>
+<body class="shell h-full font-sans text-stone-100 antialiased">
+	::foreach assets::::if (type == "font")::
+	<span style="font-family: ::id::"> </span>::end::::end::
+
+	<div class="flex h-full w-full flex-col lg:flex-row">
+
+		<!-- LEFT: Interactive mode (config) -->
+		<aside class="rail flex min-h-0 w-full shrink-0 flex-col border-b lg:w-[300px] lg:border-b-0 lg:border-r" aria-label="Interactive mode">
+			<header class="shrink-0 px-5 pb-3 pt-4">
+				<p class="font-mono text-[10px] font-medium tracking-[0.18em] text-gold-mid">REELS LAB</p>
+				<h1 class="mt-0.5 text-[17px] font-semibold tracking-tight text-stone-50">Interactive mode</h1>
+				<p class="mt-1 text-[12px] leading-snug text-[#6b756f]">Tune the board — stage rebuilds live.</p>
+			</header>
+
+			<form id="demo-form" class="rail-scroll flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 pb-5">
+				<section class="space-y-3.5" aria-labelledby="sec-board">
+					<h2 id="sec-board" class="font-mono text-[10px] font-semibold tracking-[0.14em] text-gold-soft/80">Board</h2>
+
+					<label class="block">
+						<span class="field-label"><span>Reels</span><span id="val-reels" class="field-value">5</span></span>
+						<input id="cfg-reels" name="reels" type="range" min="3" max="5" step="1" value="5" class="rebuild-ctrl w-full" />
+					</label>
+
+					<label class="block">
+						<span class="field-label"><span>Visible cells</span><span id="val-cells" class="field-value">3</span></span>
+						<input id="cfg-cells" name="visibleCells" type="range" min="3" max="4" step="1" value="3" class="rebuild-ctrl w-full" />
+					</label>
+
+					<fieldset>
+						<legend class="field-label mb-2">Direction</legend>
+						<div class="seg">
+							<label>
+								<input type="radio" name="direction" value="forward" checked class="rebuild-ctrl sr-only" />
+								Forward
+							</label>
+							<label>
+								<input type="radio" name="direction" value="reverse" class="rebuild-ctrl sr-only" />
+								Reverse
+							</label>
+						</div>
+					</fieldset>
+
+					<label class="check-row">
+						<input id="cfg-alt-dirs" name="alternateDirections" type="checkbox" class="rebuild-ctrl" />
+						<span>
+							<span class="block text-[13px] font-medium text-stone-200">Alternate reels</span>
+							<span class="mt-0.5 block font-mono text-[10px] text-[#6b756f]">F · R · F · R …</span>
+						</span>
+					</label>
+
+					<label class="block">
+						<span class="field-label"><span>Bounce</span><span id="val-bounce" class="field-value">56 px</span></span>
+						<input id="cfg-bounce" name="bounceDistance" type="range" min="0" max="80" step="2" value="56" class="rebuild-ctrl w-full" />
+					</label>
+
+					<label class="block">
+						<span class="field-label"><span>Curve preset</span></span>
+						<select id="cfg-curve-preset" name="curvePreset" class="rebuild-ctrl select-field">
+							<option value="flat" selected>Flat</option>
+							<option value="single">Single drum</option>
+							<option value="per-reel">Per-reel (deeper mid)</option>
+							<option value="set-lean">Set-lean</option>
+							<option value="set">Set focus</option>
+						</select>
+						<span class="mt-1 block font-mono text-[10px] text-[#6b756f]">pair with Cascade + Warp for drum fall</span>
+					</label>
+
+					<label class="block">
+						<span class="field-label"><span>Curve mode</span></span>
+						<select id="cfg-curve-mode" name="curveMode" class="rebuild-ctrl select-field">
+							<option value="symbol" selected>Symbol (per-cell)</option>
+							<option value="warp">Warp (reel texture)</option>
+						</select>
+						<span class="mt-1 block font-mono text-[10px] text-[#6b756f]">warp · curveBleed 24 · bezel inset</span>
+					</label>
+
+					<label class="block">
+						<span class="field-label"><span>Curve amount</span><span id="val-curve" class="field-value">0</span></span>
+						<input id="cfg-curve" name="curve" type="range" min="0" max="70" step="1" value="0" class="rebuild-ctrl w-full" />
+					</label>
+
+					<label class="check-row">
+						<input id="cfg-sticky-pin" name="stickyPin" type="checkbox" class="rebuild-ctrl" />
+						<span>
+							<span class="block text-[13px] font-medium text-stone-200">Sticky pin</span>
+							<span class="mt-0.5 block font-mono text-[10px] text-[#6b756f]">pin WILD · permanent · Move pin walks</span>
+						</span>
+					</label>
+
+					<label class="check-row">
+						<input id="cfg-hold-respin" name="holdRespin" type="checkbox" class="rebuild-ctrl" />
+						<span>
+							<span class="block text-[13px] font-medium text-stone-200">Hold respin</span>
+							<span class="mt-0.5 block font-mono text-[10px] text-[#6b756f]">spin({ holdReels }) · BAR locks column</span>
+						</span>
+					</label>
+
+					<label class="check-row">
+						<input id="cfg-hold-win-board" name="holdAndWinBoard" type="checkbox" class="rebuild-ctrl" />
+						<span>
+							<span class="block text-[13px] font-medium text-stone-200">Hold&amp;Win board</span>
+							<span class="mt-0.5 block font-mono text-[10px] text-[#6b756f]">3×3 cells · HoldAndWinBuilder</span>
+						</span>
+					</label>
+
+					<label class="check-row">
+						<input id="cfg-spine-wild" name="spineWild" type="checkbox" class="rebuild-ctrl" />
+						<span>
+							<span class="block text-[13px] font-medium text-stone-200">Spine WILD (mock)</span>
+							<span class="mt-0.5 block font-mono text-[10px] text-[#6b756f]">SpineReelSymbol + MockSpineFactory</span>
+						</span>
+					</label>
+
+					<label class="check-row">
+						<input id="cfg-multiways" name="multiways" type="checkbox" class="rebuild-ctrl" />
+						<span>
+							<span class="block text-[13px] font-medium text-stone-200">MultiWays</span>
+							<span class="mt-0.5 block font-mono text-[10px] text-[#6b756f]">setShape [2–4] · exclusive w/ tumble</span>
+						</span>
+					</label>
+
+					<label class="check-row">
+						<input id="cfg-horizontal" name="horizontal" type="checkbox" class="rebuild-ctrl" />
+						<span>
+							<span class="block text-[13px] font-medium text-stone-200">Horizontal</span>
+							<span class="mt-0.5 block font-mono text-[10px] text-[#6b756f]">.orientation(Horizontal) · exclusive w/ MW</span>
+						</span>
+					</label>
+				</section>
+
+				<section class="space-y-3.5 border-t border-gold-mid/10 pt-5" aria-labelledby="sec-spin">
+					<h2 id="sec-spin" class="font-mono text-[10px] font-semibold tracking-[0.14em] text-gold-soft/80">Spin</h2>
+
+					<label class="block">
+						<span class="field-label"><span>Speed</span></span>
+						<select id="cfg-speed" name="speed" class="live-ctrl select-field">
+							<option value="normal">normal</option>
+							<option value="turbo">turbo</option>
+							<option value="superTurbo">superTurbo</option>
+						</select>
+					</label>
+
+					<label class="block">
+						<span class="field-label"><span>Stop stagger</span><span id="val-delay" class="field-value">140 ms</span></span>
+						<input id="cfg-delay" name="stopDelay" type="range" min="0" max="300" step="10" value="140" class="live-ctrl w-full" />
+					</label>
+				</section>
+
+				<section class="space-y-3.5 border-t border-gold-mid/10 pt-5" aria-labelledby="sec-cascade">
+					<h2 id="sec-cascade" class="font-mono text-[10px] font-semibold tracking-[0.14em] text-gold-soft/80">Cascade</h2>
+
+					<label class="check-row">
+						<input id="cfg-cascade" name="cascade" type="checkbox" class="rebuild-ctrl" style="accent-color:#e8943a" />
+						<span>
+							<span class="block text-[13px] font-medium text-stone-200">Enable tumble</span>
+							<span class="mt-0.5 block font-mono text-[10px] text-[#6b756f]">Fall → Place → DropIn</span>
+						</span>
+					</label>
+
+					<div id="cascade-opts" class="hidden space-y-3.5">
+						<label class="block">
+							<span class="field-label"><span>Refill mode</span></span>
+							<select id="cfg-refill-mode" name="refillMode" class="select-field">
+								<option value="combined">combined</option>
+								<option value="gravity-then-drop" selected>gravity-then-drop</option>
+							</select>
+						</label>
+						<label id="hold-wrap" class="block">
+							<span class="field-label"><span>Gravity hold</span><span id="val-hold" class="field-value">280 ms</span></span>
+							<input id="cfg-gravity-hold" name="gravityHoldMs" type="range" min="0" max="800" step="20" value="280" class="w-full" />
+						</label>
+					</div>
+				</section>
+			</form>
+		</aside>
+
+		<!-- CENTER: Stage -->
+		<main class="stage-shell relative flex min-h-0 min-w-0 flex-1 flex-col" aria-label="Reel stage">
+			<div class="pointer-events-none absolute inset-x-0 top-0 flex justify-center pt-5">
+				<span class="rounded-full border border-gold-mid/20 bg-black/30 px-3 py-1 font-mono text-[10px] tracking-[0.16em] text-gold-soft/70">
+					STAGE
+				</span>
+			</div>
+			<div class="flex flex-1 items-center justify-center overflow-hidden p-5 sm:p-7 lg:p-8">
+				<div id="openfl-content" class="stage-frame relative max-h-full max-w-full overflow-hidden rounded-2xl"></div>
+			</div>
+		</main>
+
+		<!-- RIGHT: Spin / Skip / Snippet -->
+		<aside class="rail flex min-h-0 w-full shrink-0 flex-col border-t lg:w-[272px] lg:border-l lg:border-t-0" aria-label="Play controls">
+			<header class="shrink-0 px-5 pb-3 pt-4">
+				<p class="font-mono text-[10px] font-medium tracking-[0.18em] text-gold-mid">PLAY</p>
+				<h2 class="mt-0.5 text-[17px] font-semibold tracking-tight text-stone-50">Spin &amp; skip</h2>
+			</header>
+
+			<div class="rail-scroll flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 pb-5">
+				<p id="demo-status" data-state="idle" aria-live="polite">Waiting for engine…</p>
+
+				<button type="button" id="btn-spin" title="Space">SPIN</button>
+				<button type="button" id="btn-skip" disabled title="S">SKIP</button>
+				<button type="button" id="btn-show-wins" class="ghost-btn accent">Show wins</button>
+				<button type="button" id="btn-nudge" class="ghost-btn">Nudge mid</button>
+				<button type="button" id="btn-force-wild" class="ghost-btn">Force WILD</button>
+				<button type="button" id="btn-force-big" class="ghost-btn">Force BIG</button>
+
+				<div id="pin-actions" class="hidden flex-col gap-2 pt-1">
+					<button type="button" id="btn-move-pin" class="ghost-btn accent">Move pin</button>
+				</div>
+
+				<div id="cascade-actions" class="hidden flex-col gap-2 pt-1">
+					<button type="button" id="btn-refill" class="ghost-btn">Refill</button>
+					<button type="button" id="btn-cascade" class="ghost-btn accent">Cascade</button>
+				</div>
+
+				<div class="mt-auto pt-4">
+					<div class="snippet-box">
+						<header>
+							<span class="font-mono text-[10px] tracking-[0.12em] text-gold-soft/70">Snippet</span>
+							<span class="font-mono text-[9px] text-[#4a544e]">live</span>
+						</header>
+						<pre id="demo-snippet"></pre>
+					</div>
+					<p class="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-[#4a544e]">
+						<span class="kbd">Space</span> spin
+						<span class="text-[#2e3833]">·</span>
+						<span class="kbd">S</span> skip
+					</p>
+				</div>
+			</div>
+		</aside>
+	</div>
+
+	<script type="text/javascript">
+		lime.embed("::APP_FILE::", "openfl-content", ::WIN_WIDTH::, ::WIN_HEIGHT::);
+	</script>
+	<script type="text/javascript" src="./sample-ui.js"></script>
+</body>
+</html>

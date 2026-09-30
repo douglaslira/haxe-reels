@@ -1,0 +1,11 @@
+haxe-reels
+==========
+
+Architecture, spin lifecycle, motion contract, column targets, and testing
+harness patterns are adapted from pixi-reels (MIT):
+
+  https://github.com/schmooky/pixi-reels
+
+Copyright (c) 2026 schmooky and contributors
+
+See LICENSE for terms applying to this Haxe/OpenFL port.

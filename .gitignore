@@ -1,0 +1,12 @@
+export/
+bin/
+obj/
+*.n
+*.hxproj
+.DS_Store
+.idea/
+.vscode/
+dump/
+sample/**/Export/
+games/**/Export/
+

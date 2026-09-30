@@ -1,0 +1,15 @@
+{
+  "name": "haxe-reels",
+  "url": "https://github.com/douglaslira/haxe-reels",
+  "license": "MIT",
+  "tags": ["openfl", "slot", "reels", "game"],
+  "description": "Standalone reel engine for OpenFL/Haxe. Spin lifecycle, symbol pooling, typed events. Inspired by pixi-reels.",
+  "version": "0.1.0",
+  "classPath": "src",
+  "releasenote": "MVP: ReelSet builder, spin phases, BitmapReelSymbol, headless harness, utest suite.",
+  "contributors": ["douglaslira"],
+  "dependencies": {
+    "openfl": "",
+    "lime": ""
+  }
+}

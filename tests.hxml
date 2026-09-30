@@ -1,0 +1,9 @@
+# Domain + harness tests (interp). OpenFL is linked so BitmapReelSymbol compiles;
+# FakeClock drives time without a Stage.
+-cp src
+-cp test
+-lib openfl
+-lib lime
+-lib utest
+-main TestMain
+--interp
